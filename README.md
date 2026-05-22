@@ -15,14 +15,8 @@ Esta é a forma recomendada e que foi testada. Todos os componentes rodam no mes
 - Docker Desktop instalado e rodando
 - Git (para clonar o repositório)
 
-### 2. Configurar o .env
 
-```cmd
-copy .env.completo .env
-notepad .env
-```
-
-Preencha com o IP real do seu PC (use `ipconfig` para descobrir):
+Preencha com o IP real do seu PC no .env.
 
 ```dotenv
 B1_IP=192.168.100.64
@@ -36,9 +30,7 @@ SENSOR_SUL_IP=192.168.100.64
 
 # ── IP da máquina dos drones ──────────────────────────────────────────
 # Para o broker chamar o drone de volta via RPC.
-# MESMO PC: deixe comentado — o drone usará seu hostname Docker automaticamente
-# PC DIFERENTE: defina com o IP real da máquina dos drones
-# DRONE_HOST_IP=192.168.1.30
+# MESMO PC: o drone usará seu hostname Docker automaticamente
 
 # ── Configurações do drone  ────────────────────────────────
 
@@ -53,9 +45,9 @@ LONG_INICIAL=56.20
 O broker1 cria a rede `raft-shared`. Os demais entram nela.
 
 ```cmd
-docker compose -f docker-compose.broker1.yml up --build -d
-docker compose -f docker-compose.broker2.yml up --build -d
-docker compose -f docker-compose.broker3.yml up --build -d
+docker compose -f docker-compose.broker1.yml up --build 
+docker compose -f docker-compose.broker2.yml up --build 
+docker compose -f docker-compose.broker3.yml up --build 
 ```
 
 Aguarde ~5 segundos para a eleição do líder. Verifique:
@@ -71,7 +63,7 @@ Você deve ver um dos brokers com `🏆 ELEITO LÍDER` e os outros com `líder=n
 ### 4. Subir  drone
 
 ```cmd
-docker compose -f docker-compose.drone.yml up --build -d
+docker compose -f docker-compose.drone.yml up --build 
 
 ```
 
@@ -189,7 +181,7 @@ Broker Líder ──── Raft ──── Broker Follower × 2
     │                           (replicam todo estado)
     ▼
 Scheduler
-    │  (menor distância ao setor)
+    │  
     ▼
 Drone (RPC)
     │
