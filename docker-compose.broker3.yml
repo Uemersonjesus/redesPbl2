@@ -1,0 +1,32 @@
+version: "3.9"
+
+networks:
+  raft-shared:
+    name: raft-shared
+    driver: bridge
+    external: false
+
+services:
+  broker3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: broker3
+    hostname: broker3
+    environment:
+      NODE_ID: node-3
+      PEERS: "node-1|broker1:7001|8001|9001|8090,node-2|broker2:7001|8002|9001|8091,node-3|broker3:7001|8003|9001|8092"
+      ELECTION_TIMEOUT_MS: "500"
+      HEARTBEAT_MS: "50"
+      BROKER_TCP_PORT: "9001"
+      BROKER_DRONE_RPC_PORT: "9010"
+      BROKER_WS_PORT: "8090"
+      BROKER_LOG_LEVEL: "${BROKER_LOG_LEVEL:-normal}"
+    ports:
+      - "7003:7001"
+      - "8092:8090"
+      - "9003:9001"
+      - "9013:9010"
+    networks:
+      - raft-shared
+    restart: unless-stopped

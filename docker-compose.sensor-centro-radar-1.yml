@@ -1,0 +1,24 @@
+name: sensor-centro-radar-1
+version: "3.9"
+networks:
+  raft-shared:
+    name: raft-shared
+    driver: bridge
+    external: true
+services:
+  sensor:
+    build:
+      context: .
+      dockerfile: sensor/Dockerfile
+    container_name: centro-radar-1
+    hostname: centro-radar-1
+    environment:
+      SENSOR_ID: centro-radar-1
+      SETOR_ID:  setor-centro
+      TIPO:      radar
+      LAT:       26.57
+      LONG:      56.27
+      SENSOR_DEMO_MODE: "${SENSOR_DEMO_MODE:-true}"
+      BROKER_WS_ADDRS: "broker1:8090,broker2:8090,broker3:8090"
+    networks: [raft-shared]
+    restart: unless-stopped

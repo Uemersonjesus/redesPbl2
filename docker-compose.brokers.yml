@@ -1,0 +1,65 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────
+# docker-compose.brokers.yml
+# Rodar nas máquinas dos BROKERS (cluster Raft)
+#
+# Variáveis de ambiente necessárias (via .env ou export):
+#   BROKER1_IP  — IP da máquina do broker1 na LAN (ex: 192.168.1.10)
+#   BROKER2_IP  — IP da máquina do broker2 na LAN (ex: 192.168.1.11)
+#   BROKER3_IP  — IP da máquina do broker3 na LAN (ex: 192.168.1.12)
+#   NODE_ID     — qual nó este compose sobe (node-1, node-2 ou node-3)
+#
+# Exemplo de uso:
+#   Máquina 192.168.1.10:
+#     BROKER1_IP=192.168.1.10 BROKER2_IP=192.168.1.11 BROKER3_IP=192.168.1.12 \
+#     NODE_ID=node-1 docker-compose -f docker-compose.brokers.yml up
+# ─────────────────────────────────────────────────────────────────────────
+
+networks:
+  broker-net:
+    driver: bridge
+
+x-broker-env: &broker-env
+  # IPs reais da LAN — preenchidos via variável de ambiente ou .env
+  PEERS: "node-1|${BROKER1_IP}:7001|8001|9001,node-2|${BROKER2_IP}:7001|8002|9001,node-3|${BROKER3_IP}:7001|8003|9001"
+  ELECTION_TIMEOUT_MS: "500"
+  HEARTBEAT_MS: "50"
+  BROKER_TCP_PORT: "9001"
+  BROKER_DRONE_RPC_PORT: "9010"
+  BROKER_WS_PORT: "8090"
+  BROKER_LOG_LEVEL: "normal"
+  # Lista de todos os sensores da LAN — broker líder conecta via WebSocket
+  # Formato: sensorID|setorID|IP_SENSOR:porta
+  # Substitua pelos IPs reais das máquinas dos sensores
+  SENSORES_WS: >-
+    norte-radar-1|setor-norte|${SENSOR_NORTE_IP}:8081,
+    norte-ais-1|setor-norte|${SENSOR_NORTE_IP}:8082,
+    norte-boia-1|setor-norte|${SENSOR_NORTE_IP}:8083,
+    norte-clima-1|setor-norte|${SENSOR_NORTE_IP}:8084,
+    centro-radar-1|setor-centro|${SENSOR_CENTRO_IP}:8081,
+    centro-ais-1|setor-centro|${SENSOR_CENTRO_IP}:8082,
+    centro-boia-1|setor-centro|${SENSOR_CENTRO_IP}:8083,
+    centro-clima-1|setor-centro|${SENSOR_CENTRO_IP}:8084,
+    sul-radar-1|setor-sul|${SENSOR_SUL_IP}:8081,
+    sul-ais-1|setor-sul|${SENSOR_SUL_IP}:8082,
+    sul-boia-1|setor-sul|${SENSOR_SUL_IP}:8083,
+    sul-clima-1|setor-sul|${SENSOR_SUL_IP}:8084
+
+services:
+  broker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: broker-${NODE_ID}
+    hostname: broker-${NODE_ID}
+    environment:
+      <<: *broker-env
+      NODE_ID: ${NODE_ID}
+    ports:
+      - "7001:7001"   # Raft RPC (entre brokers)
+      - "9001:9001"   # TCP sensores legado
+      - "9010:9010"   # RPC drones
+    networks:
+      - broker-net
+    restart: unless-stopped

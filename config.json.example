@@ -1,0 +1,10 @@
+{
+  "self_id": "node-1",
+  "election_timeout_ms": 150,
+  "heartbeat_ms": 50,
+  "peers": [
+    { "id": "node-1", "raft_addr": "broker1:7001", "udp_port": 8001 },
+    { "id": "node-2", "raft_addr": "broker2:7002", "udp_port": 8002 },
+    { "id": "node-3", "raft_addr": "broker3:7003", "udp_port": 8003 }
+  ]
+}

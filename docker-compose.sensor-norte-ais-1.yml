@@ -1,0 +1,24 @@
+name: sensor-norte-ais-1
+version: "3.9"
+networks:
+  raft-shared:
+    name: raft-shared
+    driver: bridge
+    external: true
+services:
+  sensor:
+    build:
+      context: .
+      dockerfile: sensor/Dockerfile
+    container_name: norte-ais-1
+    hostname: norte-ais-1
+    environment:
+      SENSOR_ID: norte-ais-1
+      SETOR_ID:  setor-norte
+      TIPO:      ais
+      LAT:       26.66
+      LONG:      56.14
+      SENSOR_DEMO_MODE: "${SENSOR_DEMO_MODE:-true}"
+      BROKER_WS_ADDRS: "broker1:8090,broker2:8090,broker3:8090"
+    networks: [raft-shared]
+    restart: unless-stopped

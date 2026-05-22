@@ -1,0 +1,31 @@
+name: sensor
+version: "3.9"
+
+# Sobe um sensor. Configure SENSOR_ID, SETOR_ID, TIPO, LAT, LONG no .env.
+
+networks:
+  raft-shared:
+    name: raft-shared
+    driver: bridge
+    external: true   # usa a rede já criada pelos brokers
+
+services:
+  sensor:
+    build:
+      context: .
+      dockerfile: sensor/Dockerfile
+    container_name: ${SENSOR_ID:-sensor-1}
+    hostname: ${SENSOR_ID:-sensor-1}
+    environment:
+      SENSOR_ID: ${SENSOR_ID:-sensor-1}
+      SETOR_ID:  ${SETOR_ID:-setor-norte}
+      TIPO:      ${TIPO:-radar}
+      LAT:       ${LAT:-26.65}
+      LONG:      ${LONG:-56.15}
+      # Mesmo PC: usa hostnames e portas internas (8090)
+      BROKER_WS_ADDRS: "broker1:8090,broker2:8090,broker3:8090"
+      # true = probabilidades altas para demonstração | false = 1% realista
+      SENSOR_DEMO_MODE: "${SENSOR_DEMO_MODE:-true}"
+    networks:
+      - raft-shared
+    restart: unless-stopped

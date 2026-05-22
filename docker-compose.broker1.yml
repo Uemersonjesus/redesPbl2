@@ -1,0 +1,55 @@
+version: "3.9"
+
+# Sobe apenas o broker1.
+# Configure o .env e rode:
+#   docker compose -f docker-compose.broker1.yml up --build
+#
+# IMPORTANTE: quando todos os brokers estão no mesmo PC,
+# eles compartilham a rede 'raft-shared' para comunicação direta
+# sem depender do NAT do host. Os hostnames broker1/broker2/broker3
+# são resolvidos automaticamente dentro desta rede.
+
+networks:
+  raft-shared:
+    name: raft-shared
+    driver: bridge
+
+services:
+  broker1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: broker1
+    hostname: broker1
+    environment:
+      NODE_ID: node-1
+      # Quando no mesmo PC: usa hostnames Docker (broker1/2/3)
+      # Quando em PCs diferentes: substitua pelos IPs reais no .env
+      PEERS: "node-1|broker1:7001|8001|9001|8090,node-2|broker2:7001|8002|9001|8091,node-3|broker3:7001|8003|9001|8092"
+      ELECTION_TIMEOUT_MS: "500"
+      HEARTBEAT_MS: "50"
+      BROKER_TCP_PORT: "9001"
+      BROKER_DRONE_RPC_PORT: "9010"
+      BROKER_WS_PORT: "8090"
+      BROKER_LOG_LEVEL: "${BROKER_LOG_LEVEL:-normal}"
+      SENSORES_WS: >-
+        norte-radar-1|setor-norte|${SENSOR_NORTE_IP:-sensor-norte-radar-1}:8080,
+        norte-ais-1|setor-norte|${SENSOR_NORTE_IP:-sensor-norte-ais-1}:8080,
+        norte-boia-1|setor-norte|${SENSOR_NORTE_IP:-sensor-norte-boia-1}:8080,
+        norte-clima-1|setor-norte|${SENSOR_NORTE_IP:-sensor-norte-clima-1}:8080,
+        centro-radar-1|setor-centro|${SENSOR_CENTRO_IP:-sensor-centro-radar-1}:8080,
+        centro-ais-1|setor-centro|${SENSOR_CENTRO_IP:-sensor-centro-ais-1}:8080,
+        centro-boia-1|setor-centro|${SENSOR_CENTRO_IP:-sensor-centro-boia-1}:8080,
+        centro-clima-1|setor-centro|${SENSOR_CENTRO_IP:-sensor-centro-clima-1}:8080,
+        sul-radar-1|setor-sul|${SENSOR_SUL_IP:-sensor-sul-radar-1}:8080,
+        sul-ais-1|setor-sul|${SENSOR_SUL_IP:-sensor-sul-ais-1}:8080,
+        sul-boia-1|setor-sul|${SENSOR_SUL_IP:-sensor-sul-boia-1}:8080,
+        sul-clima-1|setor-sul|${SENSOR_SUL_IP:-sensor-sul-clima-1}:8080
+    ports:
+      - "7001:7001"
+      - "8090:8090"
+      - "9001:9001"
+      - "9010:9010"
+    networks:
+      - raft-shared
+    restart: unless-stopped

@@ -1,0 +1,25 @@
+name: drone2
+version: "3.9"
+networks:
+  raft-shared:
+    name: raft-shared
+    driver: bridge
+    external: true
+services:
+  drone:
+    build:
+      context: .
+      dockerfile: drone/Dockerfile
+    container_name: drone-2
+    hostname: drone-2
+    environment:
+      DRONE_ID:         drone-2
+      DRONE_HOST:       ${DRONE_HOST_IP:-drone-2}
+      DRONE_RPC_PORT:   "7100"
+      LAT_INICIAL:      ${LAT2_INICIAL:-26.65}
+      LONG_INICIAL:     ${LONG2_INICIAL:-56.15}
+      BROKER_ADDRS_RPC: "broker1:9010,broker2:9010,broker3:9010"
+    ports:
+      - "7102:7100"
+    networks: [raft-shared]
+    restart: unless-stopped

@@ -1,0 +1,35 @@
+name: drone1
+version: "3.9"
+
+# Sobe um drone. Configure DRONE_ID, DRONE_RPC_PORT no .env.
+# Quando no mesmo PC que os brokers: usa hostnames broker1/2/3
+# Quando em PC diferente: defina B1_IP, B2_IP, B3_IP no .env
+
+networks:
+  raft-shared:
+    name: raft-shared
+    driver: bridge
+    external: true   # usa a rede já criada pelos brokers
+
+services:
+  drone:
+    build:
+      context: .
+      dockerfile: drone/Dockerfile
+    container_name: ${DRONE_ID:-drone-1}
+    hostname: ${DRONE_ID:-drone-1}
+    environment:
+      DRONE_ID:        ${DRONE_ID:-drone-1}
+      # Quando no mesmo PC: usa o hostname Docker (nome do container)
+      # Quando em PC diferente: define DRONE_HOST_IP no .env com IP real
+      DRONE_HOST:      ${DRONE_HOST_IP:-${DRONE_ID:-drone-1}}
+      DRONE_RPC_PORT:  "7100"
+      LAT_INICIAL:     ${LAT_INICIAL:-26.60}
+      LONG_INICIAL:    ${LONG_INICIAL:-56.20}
+      # Mesmo PC: usa hostnames. PC diferente: usa IPs do .env
+      BROKER_ADDRS_RPC: "broker1:9010,broker2:9010,broker3:9010"
+    ports:
+      - "${DRONE_RPC_PORT:-7101}:7100"
+    networks:
+      - raft-shared
+    restart: unless-stopped

@@ -1,0 +1,108 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────
+# docker-compose.drones.yml
+# Rodar na máquina dos DRONES
+#
+# Variáveis necessárias:
+#   BROKER1_IP — IP do broker1 na LAN
+#   BROKER2_IP — IP do broker2 na LAN
+#   BROKER3_IP — IP do broker3 na LAN
+#
+# Cada drone tem seu próprio container e porta RPC única.
+# Por padrão todos iniciam próximos ao setor norte (entrada do estreito).
+#
+# Exemplo de uso:
+#   BROKER1_IP=192.168.1.10 BROKER2_IP=192.168.1.11 BROKER3_IP=192.168.1.12 \
+#   docker-compose -f docker-compose.drones.yml up
+#
+# Para subir apenas um drone específico:
+#   docker-compose -f docker-compose.drones.yml up drone-1
+# ─────────────────────────────────────────────────────────────────────────
+
+networks:
+  drone-net:
+    driver: bridge
+
+x-drone-base: &drone-base
+  build:
+    context: .
+    dockerfile: drone/Dockerfile
+  networks:
+    - drone-net
+  restart: unless-stopped
+
+x-broker-rpc: &broker-rpc
+  BROKER_ADDRS_RPC: "${BROKER1_IP:-broker1}:9010,${BROKER2_IP:-broker2}:9010,${BROKER3_IP:-broker3}:9010"
+
+services:
+
+  drone-1:
+    <<: *drone-base
+    container_name: drone-1
+    hostname: drone-1
+    environment:
+      <<: *broker-rpc
+      DRONE_ID:        drone-1
+      DRONE_HOST:      "${DRONE_HOST_IP:-drone-1}"   # IP desta máquina para o broker conectar de volta
+      DRONE_RPC_PORT:  "7100"
+      LAT_INICIAL:     "26.60"
+      LONG_INICIAL:    "56.20"
+    ports:
+      - "7101:7100"   # RPC externo único por drone
+
+  drone-2:
+    <<: *drone-base
+    container_name: drone-2
+    hostname: drone-2
+    environment:
+      <<: *broker-rpc
+      DRONE_ID:        drone-2
+      DRONE_HOST:      "${DRONE_HOST_IP:-drone-2}"
+      DRONE_RPC_PORT:  "7100"
+      LAT_INICIAL:     "26.60"
+      LONG_INICIAL:    "56.20"
+    ports:
+      - "7102:7100"
+
+  drone-3:
+    <<: *drone-base
+    container_name: drone-3
+    hostname: drone-3
+    environment:
+      <<: *broker-rpc
+      DRONE_ID:        drone-3
+      DRONE_HOST:      "${DRONE_HOST_IP:-drone-3}"
+      DRONE_RPC_PORT:  "7100"
+      LAT_INICIAL:     "26.60"
+      LONG_INICIAL:    "56.20"
+    ports:
+      - "7103:7100"
+
+  drone-4:
+    <<: *drone-base
+    container_name: drone-4
+    hostname: drone-4
+    environment:
+      <<: *broker-rpc
+      DRONE_ID:        drone-4
+      DRONE_HOST:      "${DRONE_HOST_IP:-drone-4}"
+      DRONE_RPC_PORT:  "7100"
+      LAT_INICIAL:     "26.60"
+      LONG_INICIAL:    "56.20"
+    ports:
+      - "7104:7100"
+
+  drone-5:
+    <<: *drone-base
+    container_name: drone-5
+    hostname: drone-5
+    environment:
+      <<: *broker-rpc
+      DRONE_ID:        drone-5
+      DRONE_HOST:      "${DRONE_HOST_IP:-drone-5}"
+      DRONE_RPC_PORT:  "7100"
+      LAT_INICIAL:     "26.60"
+      LONG_INICIAL:    "56.20"
+    ports:
+      - "7105:7100"

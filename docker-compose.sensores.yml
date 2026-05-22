@@ -1,0 +1,103 @@
+name: sensores
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────
+# docker-compose.sensores.yml
+# Rodar na máquina do SETOR (sensores)
+#
+# Variáveis necessárias:
+#   SETOR        — qual setor esta máquina representa (norte, centro ou sul)
+#   SETOR_IP     — IP desta máquina na LAN (para os brokers saberem onde conectar)
+#
+# Exemplo de uso:
+#   Máquina do setor norte (192.168.1.20):
+#     SETOR=norte docker-compose -f docker-compose.sensores.yml up
+#
+# Cada sensor expõe sua porta WebSocket individualmente:
+#   radar       → :8081
+#   ais         → :8082
+#   boia_impacto→ :8083
+#   clima       → :8084
+# ─────────────────────────────────────────────────────────────────────────
+
+networks:
+  sensor-net:
+    driver: bridge
+
+services:
+
+  sensor-radar:
+    build:
+      context: .
+      dockerfile: sensor/Dockerfile
+    container_name: sensor-${SETOR:-norte}-radar-1
+    hostname: sensor-${SETOR:-norte}-radar-1
+    environment:
+      SENSOR_ID: "${SETOR:-norte}-radar-1"
+      SETOR_ID:  "setor-${SETOR:-norte}"
+      TIPO:      "radar"
+      LAT:       "${LAT_RADAR:-26.65}"
+      LONG:      "${LONG_RADAR:-56.15}"
+      WS_PORT:   "8080"
+    ports:
+      - "8081:8080"   # mapeamento externo único por tipo
+    networks:
+      - sensor-net
+    restart: unless-stopped
+
+  sensor-ais:
+    build:
+      context: .
+      dockerfile: sensor/Dockerfile
+    container_name: sensor-${SETOR:-norte}-ais-1
+    hostname: sensor-${SETOR:-norte}-ais-1
+    environment:
+      SENSOR_ID: "${SETOR:-norte}-ais-1"
+      SETOR_ID:  "setor-${SETOR:-norte}"
+      TIPO:      "ais"
+      LAT:       "${LAT_AIS:-26.60}"
+      LONG:      "${LONG_AIS:-56.20}"
+      WS_PORT:   "8080"
+    ports:
+      - "8082:8080"
+    networks:
+      - sensor-net
+    restart: unless-stopped
+
+  sensor-boia:
+    build:
+      context: .
+      dockerfile: sensor/Dockerfile
+    container_name: sensor-${SETOR:-norte}-boia-1
+    hostname: sensor-${SETOR:-norte}-boia-1
+    environment:
+      SENSOR_ID: "${SETOR:-norte}-boia-1"
+      SETOR_ID:  "setor-${SETOR:-norte}"
+      TIPO:      "boia_impacto"
+      LAT:       "${LAT_BOIA:-26.55}"
+      LONG:      "${LONG_BOIA:-56.25}"
+      WS_PORT:   "8080"
+    ports:
+      - "8083:8080"
+    networks:
+      - sensor-net
+    restart: unless-stopped
+
+  sensor-clima:
+    build:
+      context: .
+      dockerfile: sensor/Dockerfile
+    container_name: sensor-${SETOR:-norte}-clima-1
+    hostname: sensor-${SETOR:-norte}-clima-1
+    environment:
+      SENSOR_ID: "${SETOR:-norte}-clima-1"
+      SETOR_ID:  "setor-${SETOR:-norte}"
+      TIPO:      "clima"
+      LAT:       "${LAT_CLIMA:-26.70}"
+      LONG:      "${LONG_CLIMA:-56.10}"
+      WS_PORT:   "8080"
+    ports:
+      - "8084:8080"
+    networks:
+      - sensor-net
+    restart: unless-stopped
