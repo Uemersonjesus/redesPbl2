@@ -6,7 +6,7 @@ Implementa consenso Raft, fila de prioridade distribuída, sensores via WebSocke
 
 ---
 
-## Execução local (mesmo PC) — testado e validado
+## Execução local (mesmo PC) 
 
 Esta é a forma recomendada e que foi testada. Todos os componentes rodam no mesmo PC em containers Docker na rede `raft-shared`.
 
